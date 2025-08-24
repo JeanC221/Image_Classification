@@ -1,0 +1,19 @@
+# PyTorch ecosystem
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data science and visualization
+numpy>=1.21.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Machine learning utilities
+scikit-learn>=1.0.0
+
+# Optional: For better performance
+# Install with: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# (Replace cu118 with your CUDA version, or use cpu for CPU-only)
+
+# Development tools (optional)
+# jupyter>=1.0.0
+# tensorboard>=2.10.0
