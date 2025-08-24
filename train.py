@@ -16,7 +16,7 @@ from utils import (
 )
 
 
-def load_data(batch_size=32, num_workers=2):
+def load_data(batch_size=8, num_workers=0):  # Reduced batch size to 8
     """
     Carga y prepara los datasets de CIFAR-10
     
@@ -29,11 +29,10 @@ def load_data(batch_size=32, num_workers=2):
     """
     print("Cargando datos CIFAR-10...")
     
+    # Simplified transforms to reduce memory usage
     transform_train = transforms.Compose([
-        transforms.RandomHorizontalFlip(p=0.5), 
-        transforms.RandomRotation(10),            
         transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
     transform_test = transforms.Compose([
@@ -41,41 +40,54 @@ def load_data(batch_size=32, num_workers=2):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     
-    train_dataset = torchvision.datasets.CIFAR10(
-        root='./data', 
-        train=True,
-        download=True, 
-        transform=transform_train
-    )
-    
-    test_dataset = torchvision.datasets.CIFAR10(
-        root='./data', 
-        train=False,
-        download=True, 
-        transform=transform_test
-    )
-    
-    train_loader = DataLoader(
-        train_dataset, 
-        batch_size=batch_size,
-        shuffle=True, 
-        num_workers=num_workers
-    )
-    
-    test_loader = DataLoader(
-        test_dataset, 
-        batch_size=batch_size,
-        shuffle=False, 
-        num_workers=num_workers
-    )
-    
-    print(f"Dataset cargado:")
-    print(f"- Training samples: {len(train_dataset)}")
-    print(f"- Test samples: {len(test_dataset)}")
-    print(f"- Classes: {len(CIFAR10_CLASSES)}")
-    print(f"- Batch size: {batch_size}")
-    
-    return train_loader, test_loader
+    try:
+        train_dataset = torchvision.datasets.CIFAR10(
+            root='./data',
+            train=True,
+            download=True,
+            transform=transform_train
+        )
+        
+        test_dataset = torchvision.datasets.CIFAR10(
+            root='./data',
+            train=False,
+            download=True,
+            transform=transform_test
+        )
+        
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=0,
+            pin_memory=False,
+            prefetch_factor=None
+        )
+        
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=0,
+            pin_memory=False,
+            prefetch_factor=None
+        )
+        
+        print(f"\nDataset cargado:")
+        print(f"- Training samples: {len(train_dataset)}")
+        print(f"- Test samples: {len(test_dataset)}")
+        print(f"- Classes: {len(CIFAR10_CLASSES)}")
+        print(f"- Batch size: {batch_size}")
+        
+        return train_loader, test_loader
+        
+    except MemoryError:
+        print("Error de memoria al cargar el dataset.")
+        print("Intentando liberar memoria...")
+        import gc
+        gc.collect()
+        torch.cuda.empty_cache()  # In case CUDA is being used
+        raise
 
 
 def train_model(model, train_loader, device, num_epochs=10, learning_rate=0.001):
@@ -185,10 +197,11 @@ def main():
     print("="*60)
     
     
-    BATCH_SIZE = 32
+    # Modify these constants
+    BATCH_SIZE = 8  # Reduced from 32 to 8
     NUM_EPOCHS = 10
     LEARNING_RATE = 0.001
-    NUM_WORKERS = 2
+    NUM_WORKERS = 0
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
@@ -249,4 +262,4 @@ if __name__ == "__main__":
         print(f"\nError durante la ejecución: {e}")
         raise
     finally:
-        plt.ioff()  
+        plt.ioff()
