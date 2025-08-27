@@ -16,7 +16,7 @@ from utils import (
 )
 
 
-def load_data(batch_size=8, num_workers=0):  # Reduced batch size to 8
+def load_data(batch_size=16, num_workers=0):  
     """
     Carga y prepara los datasets de CIFAR-10
     
